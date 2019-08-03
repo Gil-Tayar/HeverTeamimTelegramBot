@@ -21,13 +21,13 @@ class Hvr():
 		self.init_connection()
 
 		# perform balance request
-		payload2 = {
+		payload = {
 			'balance_only': 1,
 			'current_max_month_load': 2000,
 			'current_max_load': 1000,
 			'vv': str(random.random())
 		}
-		balance_response = self.session.post(HVR_TEAMIM_CONTROL_URL, params={'food': 1}, data=payload2)
+		balance_response = self.session.post(HVR_TEAMIM_CONTROL_URL, params={'food': 1}, data=payload)
 
 		# parse the the output
 		balance_string = str(balance_response.content)[2:-1]
