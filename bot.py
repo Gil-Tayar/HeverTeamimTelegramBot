@@ -110,7 +110,7 @@ def main():
     # load user configuration file
     initialize_user_config()
 
-    # set browser instance
+    # set Hvr instance
     hvr = Hvr(user_config)
 
     """Start the bot."""
