@@ -1,11 +1,11 @@
 # Hever Teamim Card Telegram Bot
 
-## Features:
+## Features
 
  - check your balance on the "teamim" card
  - charge the hever "teamim" card
 
-## How to use:
+## How to use
  1. clone the repository
  2. copy "config.json.example" to "config.json" in the same directory
  3. edit config.json (with your personal data)
