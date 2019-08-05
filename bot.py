@@ -63,11 +63,14 @@ def set_amount(update, context):
 
     waiting_for_amount = False
     if update.message.text.isnumeric() == True:
-        charge_amount = int(update.message.text)
-        update.message.reply_text(text="האם אתה בטוח שברצונך להטעין את הכרטיס \"חבר טעמים\" בסכום של: {0} ש\"ח?".format(charge_amount), reply_markup=yes_no_markup)
-        wating_for_confirmation = True
+        if int(update.message.text) < 5:
+            update.message.reply_text(text="לא ניתן להטעין פחות מ5 ש\"ח, מבטל פעולה!", reply_markup=reply_markup)
+        else:
+            charge_amount = int(update.message.text)
+            update.message.reply_text(text="האם אתה בטוח שברצונך להטעין את הכרטיס \"חבר טעמים\" בסכום של: {0} ש\"ח?".format(charge_amount), reply_markup=yes_no_markup)
+            wating_for_confirmation = True
     else:
-     update.message.reply_text(text="הסכום אינו מספר, מבטל תהליך!", reply_markup=reply_markup)  
+     update.message.reply_text(text="הסכום אינו מספר, מבטל תהליך!", reply_markup=reply_markup)
         
 @restricted
 def confirm_charge(update, context):
@@ -93,6 +96,10 @@ def confirm_charge(update, context):
         reply = "{0}\n{1}".format(result, balance)
         update.message.reply_text(text=reply, reply_markup=reply_markup)
         update.message.reply_text(text='איך תרצה להמשיך?')
+
+@restricted
+def unknown_command(update, context):
+    update.message.reply_text(text="לא הבנתי...", reply_markup=reply_markup)
 
 def error(update, context):
     """Log Errors caused by Updates."""
@@ -126,7 +133,8 @@ def main():
     dp.add_handler(CommandHandler("charge", start_charge_process))
     dp.add_handler(CommandHandler("yes", confirm_charge))
     dp.add_handler(CommandHandler("no", confirm_charge))
-    dp.add_handler(RegexHandler("^[0-9]+.$", set_amount))
+    dp.add_handler(RegexHandler("^[0-9]+$", set_amount))
+    dp.add_handler(RegexHandler("[^0-9]", unknown_command))
 
     # log all errors
     dp.add_error_handler(error)
