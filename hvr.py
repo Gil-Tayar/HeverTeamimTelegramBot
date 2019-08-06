@@ -1,3 +1,6 @@
+#!/usr/bin/env python
+# -*- coding: utf-8 -*-
+
 import requests
 import re
 import random
@@ -6,6 +9,7 @@ import random
 HVR_LOGIN_PAGE = 'https://www.hvr.co.il/signin.aspx'
 HVR_HOME_PAGE = 'https://www.hvr.co.il/home_page.aspx?page=m_main&t=637003008000000000'
 HVR_TEAMIM_CONTROL_URL = 'https://www.hvr.co.il/gift_2000.aspx'
+HVR_WRONG_CREDIT_CARD_MSG = "<br/><br/><div align=\"center\" style=\"height:400px\"><table width=\"80%\" bgcolor=\"red\" cellspacing=\"0\" cellpadding=\"20\" bordercolor=\"black\" border=\"2\">"
 
 class Hvr():
 	def __init__(self, user_config):
@@ -30,7 +34,7 @@ class Hvr():
 		balance_response = self.session.post(HVR_TEAMIM_CONTROL_URL, params={'food': 1}, data=payload)
 
 		# parse the the output
-		balance_string = str(balance_response.content)[2:-1]
+		balance_string = str(balance_response.content)
 		balance = balance_string.split('|')
 		#print("balance in card: {0}, total available: {1}, max amount for current load: {2}".format(*balance))
 		reply = "יתרה בכרטיס: {0}\nיתרה לטעינה החודש: {1}\nסכום מירבי לטעינה: {2}".format(*balance)
@@ -62,7 +66,7 @@ class Hvr():
 		result = self.session.post(HVR_TEAMIM_CONTROL_URL, data=payload)
 
 		# return result
-		if result.status_code == 200:
+		if result.status_code == 200 and HVR_WRONG_CREDIT_CARD_MSG not in result.text:
 			return 'טעינה הושלמה בהצלחה'
 		return 'הטעינה לא הצליחה'
 

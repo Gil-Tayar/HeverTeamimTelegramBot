@@ -4,6 +4,6 @@
 	"username": "<israeli_id>",
 	"password": "<hvr_password>",
 	"credit_card_number": "<hvr_credit_card_number>",
-	"card_year": "<card_expiration_year>",
+	"card_year": "<card_expiration_year in 2 digits format>",
 	"card_month": "<card_expiration_month>"
 }

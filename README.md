@@ -9,6 +9,7 @@
  1. clone the repository
  2. copy "config.json.example" to "config.json" in the same directory
  3. edit config.json (with your personal data)
- 4. run from command line: `python bot.py`
+ 4. Install python-telegram-bot buy using the following pip command: pip install python-telegram-bot==12.0.0b1 --upgrade
+ 5. run from command line: `python bot.py`
 
 In order to use this script, you must create your own bot on telegram. You can find more information on the subject here: [telegram bots introduction](https://core.telegram.org/bots)
