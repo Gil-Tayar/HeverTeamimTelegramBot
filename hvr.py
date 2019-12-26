@@ -36,7 +36,10 @@ class Hvr():
 		# parse the the output
 		balance_string = str(balance_response.content)[2:-1] if str(balance_response.content).startswith("b'",0,2) else str(balance_response.content)
 		balance = balance_string.split('|')
-		#print("balance in card: {0}, total available: {1}, max amount for current load: {2}".format(*balance))
+
+		return balance
+
+	def format_teamim_balance(self, balance):
 		reply = "יתרה בכרטיס: {0}\nיתרה לטעינה החודש: {1}\nסכום מירבי לטעינה: {2}".format(*balance)
 		return reply
 

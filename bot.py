@@ -7,6 +7,8 @@ from telegram.ext import Updater, CommandHandler, MessageHandler, Filters, Regex
 from telegram import ReplyKeyboardMarkup, KeyboardButton, ReplyKeyboardRemove
 from functools import wraps
 from hvr import *
+from math import ceil
+import locale
 
 hvr = None
 user_config = {}
@@ -17,13 +19,14 @@ logging.basicConfig(format='%(asctime)s - %(name)s - %(levelname)s - %(message)s
 
 logger = logging.getLogger(__name__)
 
-custom_keyboard = [[KeyboardButton('/charge'), KeyboardButton('/balance')]]
+custom_keyboard = [[KeyboardButton('/fill'), KeyboardButton('/charge'), KeyboardButton('/balance')]]
 yes_no_keyboard = [[KeyboardButton('/no'), KeyboardButton('/yes')]]
 reply_markup = ReplyKeyboardMarkup(custom_keyboard)
 yes_no_markup = ReplyKeyboardMarkup(yes_no_keyboard)
 remove_markup = ReplyKeyboardRemove()
 
-waiting_for_amount = False
+waiting_for_charge_amount = False
+waiting_for_fill_amount = False
 wating_for_confirmation = False
 charge_amount = 0
 
@@ -41,36 +44,75 @@ def restricted(func):
 def check_balance(update, context):
     """Send a message when the command /start is issued."""
     update.message.reply_text(text="בודק...")
-    reply = hvr.get_teamim_balance()
+    reply = hvr.format_teamim_balance(hvr.get_teamim_balance())
 
     update.message.reply_text(text=reply, reply_markup=reply_markup)
     update.message.reply_text(text='איך תרצה להמשיך?')
 
 @restricted
 def start_charge_process(update, context):
-    global waiting_for_amount
+    global waiting_for_charge_amount
     update.message.reply_text(text="בכמה להטעין?", reply_markup=remove_markup)
-    waiting_for_amount = True
+    waiting_for_charge_amount = True
+
+@restricted
+def start_fill_process(update, context):
+    global waiting_for_fill_amount
+    update.message.reply_text(text="כמה אתה צריך לשלם?", reply_markup=remove_markup)
+    waiting_for_fill_amount = True
 
 @restricted
 def set_amount(update, context):
-    global waiting_for_amount
+    global waiting_for_charge_amount
+    global waiting_for_fill_amount
     global wating_for_confirmation
     global charge_amount
 
-    if waiting_for_amount == False:
+    if not waiting_for_charge_amount and not waiting_for_fill_amount:
         update.message.reply_text(text="לא חיכיתי לסכום טעינה...נסה מחדש בבקשה", reply_markup=reply_markup)
+        return
 
-    waiting_for_amount = False
-    if update.message.text.isnumeric() == True:
-        if int(update.message.text) < 5:
-            update.message.reply_text(text="לא ניתן להטעין פחות מ5 ש\"ח, מבטל פעולה!", reply_markup=reply_markup)
-        else:
-            charge_amount = int(update.message.text)
-            update.message.reply_text(text="האם אתה בטוח שברצונך להטעין את הכרטיס \"חבר טעמים\" בסכום של: {0} ש\"ח?".format(charge_amount), reply_markup=yes_no_markup)
-            wating_for_confirmation = True
+    waited_for_charge = waiting_for_charge_amount
+    waited_for_fill = waiting_for_fill_amount
+
+    waiting_for_charge_amount = False
+    waiting_for_fill_amount = False
+    wating_for_confirmation = False
+
+    if not update.message.text.isnumeric():
+        update.message.reply_text(text="הסכום אינו מספר, מבטל תהליך!", reply_markup=reply_markup)
+        return
+
+    requested_amount = int(update.message.text)
+
+    if waited_for_fill:
+        update.message.reply_text(text="בודק כמה טעון כבר...")
+        balance, left_this_month, max_load  = hvr.get_teamim_balance()
+        balance, left_this_month, max_load = locale.atof(balance), locale.atoi(left_this_month), locale.atoi(max_load)
+
+        if requested_amount - balance <= 0:
+            update.message.reply_text(text="טעון מספיק כסף!", reply_markup=reply_markup)
+            return
+
+        charge_amount = int(ceil(requested_amount - balance))
+        if charge_amount > max_load:
+            update.message.reply_text(text="ֿצריך להטעין {} אבל המקסימום שאפשר זה {}... סליחה :(".format(charge_amount, max_load),
+                                      reply_markup=reply_markup)
+            return
+        update.message.reply_text(text="צריך להטעין {} שקלים כדי להשלים ל {} שקלים".format(charge_amount, requested_amount),
+                                  reply_markup=reply_markup)
+    elif waited_for_charge:
+        charge_amount = requested_amount
     else:
-     update.message.reply_text(text="הסכום אינו מספר, מבטל תהליך!", reply_markup=reply_markup)
+        update.message.reply_text(text="משהו רע קרה. כדאי לך להטעין באתר :O", reply_markup=yes_no_markup)
+        return
+
+    if charge_amount < 5:
+        update.message.reply_text(text="לא ניתן להטעין פחות מ5 ש\"ח, מבטל פעולה!", reply_markup=reply_markup)
+        return
+
+    update.message.reply_text(text="האם אתה בטוח שברצונך להטעין את הכרטיס \"חבר טעמים\" בסכום של: {0} ש\"ח?".format(charge_amount), reply_markup=yes_no_markup)
+    wating_for_confirmation = True
         
 @restricted
 def confirm_charge(update, context):
@@ -90,7 +132,7 @@ def confirm_charge(update, context):
         result = hvr.charge_teamim_card(charge_amount)
         
         # check the new balance
-        balance = hvr.get_teamim_balance()
+        balance = hvr.format_teamim_balance(hvr.get_teamim_balance())
         
         # send reply to end user
         reply = "{0}\n{1}".format(result, balance)
@@ -131,6 +173,7 @@ def main():
 
     dp.add_handler(CommandHandler("balance", check_balance))
     dp.add_handler(CommandHandler("charge", start_charge_process))
+    dp.add_handler(CommandHandler("fill", start_fill_process))
     dp.add_handler(CommandHandler("yes", confirm_charge))
     dp.add_handler(CommandHandler("no", confirm_charge))
     dp.add_handler(RegexHandler("^[0-9]+$", set_amount))
@@ -152,4 +195,7 @@ def main():
 
 
 if __name__ == '__main__':
+    # Make locale understand commas is number parsing!
+    # See https://stackoverflow.com/questions/2953746/python-parse-comma-separated-number-into-int.
+    locale.setlocale(locale.LC_ALL, 'en_US.UTF-8')
     main()
