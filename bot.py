@@ -121,6 +121,7 @@ def confirm_charge(update, context):
 
     if wating_for_confirmation == False:
         update.message.reply_text(text="לא חיכיתי לאישור עסקה, אנא נסה מחדש", reply_markup=reply_markup)
+        return
 
     wating_for_confirmation = False
     if update.message.text == '/no':
