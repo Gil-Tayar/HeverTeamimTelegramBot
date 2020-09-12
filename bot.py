@@ -163,6 +163,10 @@ def unknown_command(update, context):
 def error(update, context):
     """Log Errors caused by Updates."""
     logger.warning('Update "%s" caused error "%s"', update, context.error)
+    try:
+        raise context.error
+    except HvrLoginException:
+        update.message.reply_text(text='לא הצלחתי להתחבר לאתר חבר, בדוק את פרטי ההתחברות')
 
 def initialize_user_config(path='config.json'):
     global user_config
