@@ -16,6 +16,10 @@ class CardChargeException(Exception):
 	pass
 
 
+class HvrLoginException(Exception):
+	pass
+
+
 class Hvr():
 	def __init__(self, user_config):
 		self.session = requests.session()
@@ -75,9 +79,8 @@ class Hvr():
 		result = self.session.post(HVR_TEAMIM_CONTROL_URL, data=payload)
 
 		# return result
-		if result.status_code == 200 and HVR_WRONG_CREDIT_CARD_MSG not in result.text:
-			return 'טעינה הושלמה בהצלחה'
-		return 'הטעינה לא הצליחה'
+		if result.status_code != 200 or HVR_WRONG_CREDIT_CARD_MSG in result.text:
+			raise CardChargeException("Card charge response indicated failure")
 
 	def is_session_up(self):
 		response = self.session.get(HVR_HOME_PAGE)
@@ -88,7 +91,7 @@ class Hvr():
 		return True
 
 	def init_connection(self):
-		if self.is_session_up() == True:
+		if self.is_session_up():
 			return
 		self.perform_login()
 
@@ -118,5 +121,4 @@ class Hvr():
 		}
 		login = self.session.post(HVR_LOGIN_PAGE, data=payload)
 		if login.status_code != 200 or login.url.find('signin.aspx') != -1:
-			print('error in login, aborting...')
-			return
+			raise HvrLoginException("Failed to login")
