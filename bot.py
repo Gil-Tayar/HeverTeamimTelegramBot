@@ -46,12 +46,7 @@ def check_balance(update, context):
     """Send a message when the command /start is issued."""
     update.message.reply_text(text="בודק...")
 
-    try:
-        balance = hvr.get_teamim_balance()
-    except HvrLoginException:
-        update.message.reply_text("לא הצלחתי להתחבר לאתר חבר, בדוק את פרטי ההתחברות")
-        return
-
+    balance = hvr.get_teamim_balance()
     reply = hvr.format_teamim_balance(balance)
     update.message.reply_text(text=reply, reply_markup=reply_markup)
     update.message.reply_text(text='איך תרצה להמשיך?')
@@ -94,12 +89,7 @@ def set_amount(update, context):
 
     if waited_for_fill:
         update.message.reply_text(text="בודק כמה טעון כבר...")
-        try:
-            balance, left_this_month, max_load  = hvr.get_teamim_balance()
-        except HvrLoginException:
-            update.message.reply_text("לא הצלחתי להתחבר לאתר חבר, בדוק את פרטי ההתחברות")
-            return
-
+        balance, left_this_month, max_load  = hvr.get_teamim_balance()
         balance, left_this_month, max_load = locale.atof(balance), locale.atoi(left_this_month), locale.atoi(max_load)
 
         if requested_amount - balance <= 0:
@@ -167,6 +157,9 @@ def error(update, context):
         raise context.error
     except HvrLoginException:
         update.message.reply_text(text='לא הצלחתי להתחבר לאתר חבר, בדוק את פרטי ההתחברות')
+    except:
+        pass
+
 
 def initialize_user_config(path='config.json'):
     global user_config
