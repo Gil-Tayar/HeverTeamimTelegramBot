@@ -47,7 +47,7 @@ def check_balance(update, context):
     update.message.reply_text(text="בודק...")
 
     try:
-        balance = hvr.get_teamim_balanec()
+        balance = hvr.get_teamim_balance()
     except HvrLoginException:
         update.message.reply_text("לא הצלחתי להתחבר לאתר חבר, בדוק את פרטי ההתחברות")
         return
