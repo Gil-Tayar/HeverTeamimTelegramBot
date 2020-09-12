@@ -11,6 +11,11 @@ HVR_HOME_PAGE = 'https://www.hvr.co.il/home_page.aspx?page=m_main&t=637003008000
 HVR_TEAMIM_CONTROL_URL = 'https://www.hvr.co.il/gift_2000.aspx'
 HVR_WRONG_CREDIT_CARD_MSG = "<br/><br/><div align=\"center\" style=\"height:400px\"><table width=\"80%\" bgcolor=\"red\" cellspacing=\"0\" cellpadding=\"20\" bordercolor=\"black\" border=\"2\">"
 
+
+class CardChargeException(Exception):
+	pass
+
+
 class Hvr():
 	def __init__(self, user_config):
 		self.session = requests.session()
@@ -49,10 +54,11 @@ class Hvr():
 
 		# build load payload
 		load_page_response = self.session.get(HVR_TEAMIM_CONTROL_URL, params={'food': 1})
-		try:
-			sn = re.findall('<input type="hidden" name="sn" value="([a-z,0-9,-]*)">', str(load_page_response.content))[0]
-		except Exception as e:
-			return 'could not get sn token, aborting...'
+		sn_match = re.search('<input type="hidden" name="sn" value="([a-z,0-9,-]*)">', str(load_page_response.content))
+		if not sn_match:
+			raise CardChargeException("Could not find sn token in response")
+
+		sn = sn_match.group(1)
 		payload = {
 			'price': amount,
 			'card_num': self.credit_card_number,

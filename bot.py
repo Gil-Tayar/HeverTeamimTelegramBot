@@ -130,7 +130,11 @@ def confirm_charge(update, context):
         update.message.reply_text(text='איך תרצה להמשיך?', reply_markup=reply_markup)
     elif update.message.text == '/yes':
         update.message.reply_text(text="מבצע טעינה", reply_markup=reply_markup)
-        result = hvr.charge_teamim_card(charge_amount)
+        try:
+            result = hvr.charge_teamim_card(charge_amount)
+        except CardChargeException:
+            update.message.reply_text("נכשלתי בטעינת הכרטיס")
+            return
         
         # check the new balance
         balance = hvr.format_teamim_balance(hvr.get_teamim_balance())
