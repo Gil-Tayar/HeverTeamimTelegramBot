@@ -27,8 +27,9 @@ remove_markup = ReplyKeyboardRemove()
 
 waiting_for_charge_amount = False
 waiting_for_fill_amount = False
-wating_for_confirmation = False
+waiting_for_confirmation = False
 charge_amount = 0
+CARD_CHARGE_SUCCESS_MESSAGE = "הטעינה הושלמה בהצלחה"
 
 def restricted(func):
     @wraps(func)
@@ -44,8 +45,9 @@ def restricted(func):
 def check_balance(update, context):
     """Send a message when the command /start is issued."""
     update.message.reply_text(text="בודק...")
-    reply = hvr.format_teamim_balance(hvr.get_teamim_balance())
 
+    balance = hvr.get_teamim_balance()
+    reply = hvr.format_teamim_balance(balance)
     update.message.reply_text(text=reply, reply_markup=reply_markup)
     update.message.reply_text(text='איך תרצה להמשיך?')
 
@@ -65,7 +67,7 @@ def start_fill_process(update, context):
 def set_amount(update, context):
     global waiting_for_charge_amount
     global waiting_for_fill_amount
-    global wating_for_confirmation
+    global waiting_for_confirmation
     global charge_amount
 
     if not waiting_for_charge_amount and not waiting_for_fill_amount:
@@ -77,7 +79,7 @@ def set_amount(update, context):
 
     waiting_for_charge_amount = False
     waiting_for_fill_amount = False
-    wating_for_confirmation = False
+    waiting_for_confirmation = False
 
     if not update.message.text.isnumeric():
         update.message.reply_text(text="הסכום אינו מספר, מבטל תהליך!", reply_markup=reply_markup)
@@ -112,31 +114,35 @@ def set_amount(update, context):
         return
 
     update.message.reply_text(text="האם אתה בטוח שברצונך להטעין את הכרטיס \"חבר טעמים\" בסכום של: {0} ש\"ח?".format(charge_amount), reply_markup=yes_no_markup)
-    wating_for_confirmation = True
+    waiting_for_confirmation = True
         
 @restricted
 def confirm_charge(update, context):
-    global wating_for_confirmation
+    global waiting_for_confirmation
     global charge_amount
 
-    if wating_for_confirmation == False:
+    if not waiting_for_confirmation:
         update.message.reply_text(text="לא חיכיתי לאישור עסקה, אנא נסה מחדש", reply_markup=reply_markup)
         return
 
-    wating_for_confirmation = False
+    waiting_for_confirmation = False
     if update.message.text == '/no':
         update.message.reply_text(text="מבטל פעולה", reply_markup=reply_markup)
         charge_amount = 0
         update.message.reply_text(text='איך תרצה להמשיך?', reply_markup=reply_markup)
     elif update.message.text == '/yes':
         update.message.reply_text(text="מבצע טעינה", reply_markup=reply_markup)
-        result = hvr.charge_teamim_card(charge_amount)
+        try:
+            hvr.charge_teamim_card(charge_amount)
+        except CardChargeException:
+            update.message.reply_text("נכשלתי בטעינת הכרטיס")
+            return
         
         # check the new balance
         balance = hvr.format_teamim_balance(hvr.get_teamim_balance())
-        
+
         # send reply to end user
-        reply = "{0}\n{1}".format(result, balance)
+        reply = "{0}\n{1}".format(CARD_CHARGE_SUCCESS_MESSAGE, balance)
         update.message.reply_text(text=reply, reply_markup=reply_markup)
         update.message.reply_text(text='איך תרצה להמשיך?')
 
@@ -147,6 +153,13 @@ def unknown_command(update, context):
 def error(update, context):
     """Log Errors caused by Updates."""
     logger.warning('Update "%s" caused error "%s"', update, context.error)
+    try:
+        raise context.error
+    except HvrLoginException:
+        update.message.reply_text(text='לא הצלחתי להתחבר לאתר חבר, בדוק את פרטי ההתחברות')
+    except:
+        pass
+
 
 def initialize_user_config(path='config.json'):
     global user_config
