@@ -11,6 +11,11 @@ HVR_HOME_PAGE = 'https://www.hvr.co.il/home_page.aspx?page=m_main&t=637003008000
 HVR_TEAMIM_CONTROL_URL = 'https://www.hvr.co.il/gift_2000.aspx'
 HVR_WRONG_CREDIT_CARD_MSG = "<br/><br/><div align=\"center\" style=\"height:400px\"><table width=\"80%\" bgcolor=\"red\" cellspacing=\"0\" cellpadding=\"20\" bordercolor=\"black\" border=\"2\">"
 
+def init_session():
+	session=requests.session()
+        # Note: only accept and user-agent headers are needed, everything else is to look more innocent
+	session.headers = {'accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,image/apng,*/*;q=0.8,application/signed-exchange;v=b3;q=0.9','accept-encoding': 'gzip, deflate, br','accept-language': 'he,en-US;q=0.9,en;q=0.8,he-IL;q=0.7','cache-control': 'max-age=0','content-type': 'application/x-www-form-urlencoded','referer': 'https://www.hvr.co.il/signin.aspx?tmpl=signin_m&redirect=','sec-ch-ua': '"Google Chrome";v="89", "Chromium";v="89", ";Not A Brand";v="99"','sec-ch-ua-mobile': '?0','sec-fetch-dest': 'document','sec-fetch-mode': 'navigate','sec-fetch-site': 'same-origin','sec-fetch-user': '?1','upgrade-insecure-requests': '1','user-agent': 'Mozilla/5.0 (Linux; Android 9; SM-G960F Build/PPR1.180610.011; wv) AppleWebKit/537.36 (KHTML, like Gecko) Version/4.0 Chrome/74.0.3729.157 Mobile Safari/537.36'}
+	return session
 
 class CardChargeException(Exception):
 	pass
@@ -19,15 +24,15 @@ class CardChargeException(Exception):
 class HvrLoginException(Exception):
 	pass
 
-
 class Hvr():
 	def __init__(self, user_config):
-		self.session = requests.session()
+		self.session = init_session()
 		self.username = user_config['username']
 		self.password = user_config['password']
 		self.credit_card_number = user_config['credit_card_number']
 		self.card_year = user_config['card_year']
 		self.card_month = user_config['card_month']
+
 
 	def get_teamim_balance(self):
 		# make sure session is up
@@ -86,7 +91,7 @@ class Hvr():
 		response = self.session.get(HVR_HOME_PAGE)
 		if response.url.find('signin.aspx') != -1:
 			# session disconnected
-			self.session = requests.session()
+			self.session = init_session()
 			return False
 		return True
 
