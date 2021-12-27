@@ -75,11 +75,11 @@ class Hvr():
     def charge_teamim_card(self, amount=10):
         # make sure session is up
         self.init_connection()
-
         # build load payload
         load_page_response = self.session.get(HVR_TEAMIM_CONTROL_URL, params={'food': 1})
-        sn_match = re.search('<input type="hidden" name="sn" value="([a-z,0-9,-]*)">', str(load_page_response.content))
+        sn_match = re.search('<input type="hidden" name="sn" value="([a-z,0-9,-]*)" />', str(load_page_response.content))
         if not sn_match:
+            print(":(")
             raise CardChargeException("Could not find sn token in response")
 
         sn = sn_match.group(1)
@@ -104,7 +104,7 @@ class Hvr():
 
     def is_session_up(self):
         response = self.session.get(HVR_HOME_PAGE)
-        if response.url.find('signin.aspx') != -1:
+        if response.text.find('signin_hvr_bs_tmpl.html') != -1:
             # session disconnected
             self.session = init_session()
             return False
@@ -131,6 +131,7 @@ class Hvr():
             'tz': self.username,
             'password': self.password,
             'oMode': 'login',
+            'bs':'1',
             'tmpl_filename': 'signin_m',
             'reffer': '',
             'redirect': 'home_page.aspx?page=m_main',
@@ -140,5 +141,5 @@ class Hvr():
             'email_loc': ''
         }
         login = self.session.post(HVR_LOGIN_PAGE, data=payload)
-        if login.status_code != 200 or login.url.find('signin.aspx') != -1:
+        if login.text.find('cart.aspx') == -1:
             raise HvrLoginException("Failed to login")
