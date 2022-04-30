@@ -1,0 +1,13 @@
+telegram:
+  api-key: # Bot API key
+  allowed-users:
+    - # List of user IDs allowed to use the bot
+
+hever:
+  username: # Hever website username (ID number)
+  password: # Hever website password
+
+credit-card:
+  number:
+  expiry-year:
+  expiry-month:
