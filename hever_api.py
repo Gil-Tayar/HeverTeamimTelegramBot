@@ -2,10 +2,11 @@ import requests
 import re
 import random
 from enum import Enum
+from time import sleep
 
-LOGIN_PAGE = 'https://www.hvr.co.il/signin.aspx'
-HOME_PAGE = 'https://www.hvr.co.il/home_page.aspx'
-CARD_CONTROL_URL = 'https://www.hvr.co.il/gift_2000.aspx'
+BASE_URL = 'https://www.hvr.co.il'
+HOME_PAGE = BASE_URL + '/site/pg/hvr_home'
+CARD_CONTROL_URL = BASE_URL + '/orders/gift_2000.aspx'
 
 USER_AGENT = 'HeverBot-Mobile'  # just make sure 'mobile' is in the string :)
 
@@ -58,11 +59,11 @@ class HeverAPI:
 
     def refresh_charge_rates(self):
         self.charge_rates[CardType.blue] = self.get_charge_rates(CardType.blue)
+        sleep(2)  # probably some ugly protection mechanism they have
         self.charge_rates[CardType.yellow] = self.get_charge_rates(CardType.yellow)
 
     def get_card_balance(self, card_type: CardType):
-        # make sure session is up
-        self.init_connection()
+        self.refresh_session()
 
         payload = {
             'balance_only': 1,
@@ -81,20 +82,17 @@ class HeverAPI:
         }
 
     def charge_card(self, card_type: CardType, amount=10):
+        self.refresh_session()
         pass
 
-    def is_session_up(self):
+    def refresh_session(self):
         resp = self.session.get(HOME_PAGE, allow_redirects=False)
-        return not resp.is_redirect
-
-    def init_connection(self):
-        if self.is_session_up():
-            return
-        self.login()
-        self.refresh_charge_rates()
+        if resp.is_redirect:
+            self.login()
+            self.refresh_charge_rates()
 
     def login(self):
-        self.session.get(LOGIN_PAGE)  # sadly this is required
+        self.session.get(BASE_URL)  # sadly this is required
 
         payload = {
             'tz': self.username,
@@ -102,7 +100,7 @@ class HeverAPI:
             'oMode': 'login',
         }
 
-        resp = self.session.post(LOGIN_PAGE, data=payload)
+        resp = self.session.post(BASE_URL, data=payload)
 
-        if 'cart.aspx' not in resp.text:
-            raise LoginException("Failed to login")
+        if 'cart.aspx' not in resp.text or 'email' not in self.session.cookies:
+            raise LoginException("Login failed")
