@@ -1,16 +1,15 @@
 import logging
 from functools import wraps
 import locale
-import gettext
 import yaml
 from enum import Enum
+
+from common import _
 
 from telegram.ext import CallbackContext, Updater, CommandHandler, MessageHandler, CallbackQueryHandler, Filters
 from telegram import Update, InlineKeyboardButton, InlineKeyboardMarkup, ReplyKeyboardMarkup, KeyboardButton
 
 from hever_api import HeverAPI, CardType
-
-_ = gettext.gettext
 
 # Enable logging
 logging.basicConfig(format='%(asctime)s - %(name)s - %(levelname)s - %(message)s', level=logging.INFO)

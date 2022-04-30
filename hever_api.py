@@ -4,6 +4,8 @@ import random
 from enum import Enum
 from time import sleep
 
+from common import _
+
 BASE_URL = 'https://www.hvr.co.il'
 HOME_PAGE = BASE_URL + '/site/pg/hvr_home'
 CARD_CONTROL_URL = BASE_URL + '/orders/gift_2000.aspx'
@@ -15,8 +17,8 @@ CHARGE_FACTOR2_REGEX = re.compile(r'var gift_card_factor2 = (0.\d{1,2})')
 
 
 class CardType(Enum):
-    yellow = 'Yellow (Hever shel Keva)'
-    blue = 'Blue (Teamim)'
+    yellow = _('Yellow (Hever shel Keva)')
+    blue = _('Blue (Teamim)')
 
     def get_param(self):
         return int(self.name == 'blue')
