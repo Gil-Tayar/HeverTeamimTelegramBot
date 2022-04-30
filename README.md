@@ -1,29 +1,31 @@
-# Hever Teamim Card Telegram Bot
+# Hever chargeable cards telegram bot
 
 ## Features
 
- - check your balance on the "teamim" card
- - charge the hever "teamim" card
+ - Check your balance on both the blue (Teamim) & yellow cards
+ - Charge cards
 
 ## How to use
- 1. clone the repository
- 2. copy "config.json.example" to "config.json" in the same directory
- 3. edit config.json (with your personal data), more details [here](#example-configuration-file)
- 4. Install python-telegram-bot by using the following pip command: pip install python-telegram-bot==12.0.0b1 --upgrade
- 5. run from command line: `python bot.py`
+ 1. Create your own telegram bot with [BotFather](https://t.me/botfather)
+ 2. Clone the repository
+ 3. Copy "config.example.yml" to "config.yml" in the same directory
+ 4. Edit the configuration file with your personal data
+    - Get your own user ID from [userinfobot](https://t.me/userinfobot)
+ 5. Run from command line: `python bot.py`
 
 ## Example Configuration file
-```
-{
-	"telegram_api_key": "587285866:jWBJbmaD_dHvVijV_ixJLmEcPEwUUgXsFg3",
-	"telegram_chat_id": "445364189",
-	"username": "034408997",
-	"password": "264759062",
-	"credit_card_number": "6136518373625938",
-	"card_year": "2025",
-	"card_month": "09"
-}
-```
+```yaml
+telegram:
+  api-key: 19345890345:ABN9gQ9UH4UovTD0dGUZGFvb0ZZeisvNWVg
+  allowed-users:
+    - 3745839457
 
+hever:
+  username: 3453465462
+  password: sfgj88n3
 
-In order to use this script, you must create your own bot on telegram. You can find more information on the subject here: [telegram bots introduction](https://core.telegram.org/bots)
+credit-card:
+  number: 5326100348392750
+  expiry-year: 26
+  expiry-month: 10
+```

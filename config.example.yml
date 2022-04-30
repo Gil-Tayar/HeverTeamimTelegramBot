@@ -2,6 +2,7 @@ telegram:
   api-key: # Bot API key
   allowed-users:
     - # List of user IDs allowed to use the bot
+    - # Get your own from https://t.me/userinfobot
 
 hever:
   username: # Hever website username (ID number)
