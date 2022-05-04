@@ -1,0 +1,152 @@
+# Translations template for PROJECT.
+# Copyright (C) 2022 ORGANIZATION
+# This file is distributed under the same license as the PROJECT project.
+# FIRST AUTHOR <EMAIL@ADDRESS>, 2022.
+#
+msgid ""
+msgstr ""
+"Project-Id-Version: PROJECT VERSION\n"
+"Report-Msgid-Bugs-To: EMAIL@ADDRESS\n"
+"POT-Creation-Date: 2022-05-04 15:23+0300\n"
+"PO-Revision-Date: 2022-05-04 15:25+0300\n"
+"Last-Translator: \n"
+"Language-Team: \n"
+"Language: he\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Plural-Forms: nplurals=4; plural=(n==1 ? 0 : n==2 ? 1 : n>10 && n%10==0 ? "
+"2 : 3);\n"
+"Generated-By: Babel 2.10.1\n"
+"X-Generator: Poedit 3.0.1\n"
+
+#: hever_api.py:25
+msgid "Yellow (Hever shel Keva)"
+msgstr "צהוב (חבר של קבע)"
+
+#: hever_api.py:26
+msgid "Blue (Teamim)"
+msgstr "כחול (טעמים)"
+
+#: hever_api.py:114
+msgid "The credit card details are invalid. Can't charge card"
+msgstr "פרטי כרטיס האשראי אינם תקינים. לא ניתן להטעין את הכרטיס"
+
+#: hever_api.py:116
+msgid "Charging failed due to an unknown error"
+msgstr "הטענת הכרטיס נכשלה מסיבה שאינה ידועה"
+
+#: bot.py:43
+msgid "Switch card"
+msgstr "החלף כרטיס"
+
+#: bot.py:47
+msgid "Charge card"
+msgstr "טען כרטיס"
+
+#: bot.py:48
+msgid "Fill card"
+msgstr "מלא כרטיס"
+
+#: bot.py:53
+msgid "Confirm, charge card"
+msgstr "מאשר, טען כרטיס"
+
+#: bot.py:54
+msgid "Cancel"
+msgstr "ביטול"
+
+#: bot.py:57
+msgid "/start"
+msgstr ""
+
+#: bot.py:75
+msgid "Welcome!"
+msgstr "ברוך הבא!"
+
+#: bot.py:80
+msgid ""
+"{}\n"
+"\n"
+"Selected card: {}"
+msgstr ""
+"{}\n"
+"\n"
+"כרטיס שנבחר: {}"
+
+#: bot.py:81
+msgid ""
+"\n"
+"Current balance: ₪{balance:.2f}\n"
+"Chargeable this month: ₪{chargeable-monthly:.2f}\n"
+"Chargeable right now: ₪{chargeable-now:.2f}"
+msgstr ""
+"\n"
+"יתרה נוכחית: ₪{balance:.2f}\n"
+"יתרה לטעינה החודש: ₪{chargeable-monthly:.2f}\n"
+"יתרה לטעינה נוכחית: ₪{chargeable-now:.2f}"
+
+#: bot.py:84
+msgid ""
+"\n"
+"Current charge rates: {:.0%} and {:.0%}"
+msgstr ""
+"\n"
+"אחוזי חיוב נוכחיים לטעינה: {:.0%} ו-{:.0%}"
+
+#: bot.py:89
+msgid "Sorry, what were we talking about?"
+msgstr "סליחה, על מה דיברנו?"
+
+#: bot.py:99
+msgid "Switched card!"
+msgstr "החלפתי כרטיס!"
+
+#: bot.py:104
+msgid "With how much?"
+msgstr "בכמה?"
+
+#: bot.py:108
+msgid "How much is your bill?"
+msgstr "כמה יצא לך החשבון?"
+
+#: bot.py:112
+msgid "Charging your card..."
+msgstr "מטעין את הכרטיס..."
+
+#: bot.py:116
+msgid "Card charged successfully!"
+msgstr "הכרטיס הוטען בהצלחה!"
+
+#: bot.py:122
+msgid "Start again?"
+msgstr "שנתחיל שוב?"
+
+#: bot.py:146
+msgid "You have enough money, have fun!"
+msgstr "יש לך מספיק כסף, תהנה!"
+
+#: bot.py:151
+#, python-format
+msgid ""
+"Sorry, but you can't charge your %s card right now with any amount. You have "
+"₪%.2f left"
+msgstr "סליחה, אבל אי אפשר להטעין כרגע את הכרטיס ה%s באף סכום. נותרו לך ₪%.2f"
+
+#: bot.py:158
+#, python-format
+msgid ""
+"We can't charge your %s card with enough right now, but can charge it with ₪"
+"%.2f and fill it to ₪%.2f"
+msgstr ""
+"אי אפשר כרגע למלא לך את הכרטיס ה%s לסכום הדרוש, אבל אפשר להטעין אותו ב₪%.2f "
+"ולמלא אותו ל-₪%.2f"
+
+#: bot.py:164
+#, python-format
+msgid "We'll charge your %s card ₪%.2f to fill it to ₪%.2f."
+msgstr "אני מטעין לך את הכרטיס ה%s ב-₪%.2f כדי למלא אותו ל-₪%.2f."
+
+#: bot.py:169
+msgid "Sorry, I got confused. Let me see a doctor"
+msgstr "סליחה, התבלבלתי. תן לי לראות רופא"
