@@ -15,6 +15,11 @@ USER_AGENT = 'HeverBot-Mobile'  # just make sure 'mobile' is in the string :)
 CHARGE_FACTOR1_REGEX = re.compile(r'var gift_card_factor1 = (0.\d{1,2})')
 CHARGE_FACTOR2_REGEX = re.compile(r'var gift_card_factor2 = (0.\d{1,2})')
 
+SN_TOKEN_REGEX = re.compile(r'<input type="hidden" name="sn" value="([a-z\d-]+)" />')
+
+CHARGE_CARD_ERROR_STR = 'bgcolor="red"'
+CHARGE_CARD_ERROR_INVALID_CARD = 'עפ"י רישומינו, כרטיס האשראי שהקשת אינו מעודכן ככרטיס אשראי המשויך'
+
 
 class CardType(Enum):
     yellow = _('Yellow (Hever shel Keva)')
@@ -75,7 +80,7 @@ class HeverAPI:
         }
 
         balance_resp = self.session.post(CARD_CONTROL_URL, params={'food': card_type.get_param()}, data=payload)
-        balance, chargeable_monthly, chargeable_now = map(float, balance_resp.text.split('|'))
+        balance, chargeable_monthly, chargeable_now = map(float, balance_resp.text.replace(',', '').split('|'))
 
         return {
             'balance': balance,
@@ -83,9 +88,31 @@ class HeverAPI:
             'chargeable-now': chargeable_now,
         }
 
-    def charge_card(self, card_type: CardType, amount=10):
+    def charge_card(self, card_type: CardType, amount):
         self.refresh_session()
-        pass
+
+        resp = self.session.get(CARD_CONTROL_URL, params={'food': card_type.get_param()})
+        sn_token = SN_TOKEN_REGEX.search(resp.text).group(1)
+
+        data = {
+            'price': amount,
+            'card_num': self.credit_card_number,
+            'card_year': self.card_year,
+            'card_month': self.card_month,
+            'chkTakanon': '',
+            'om': 'load',
+            'req_sent': 1,
+            'food': card_type.get_param(),
+            'sn': sn_token
+        }
+
+        resp = self.session.post(CARD_CONTROL_URL, data)
+
+        if not resp.ok or CHARGE_CARD_ERROR_STR in resp.text:
+            if CHARGE_CARD_ERROR_INVALID_CARD in resp.text:
+                raise CardChargeException(_("The credit card details are invalid. Can't charge card"))
+            else:
+                raise CardChargeException(_("Charging failed due to an unknown error"))
 
     def refresh_session(self):
         resp = self.session.get(HOME_PAGE, allow_redirects=False)

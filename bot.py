@@ -9,7 +9,7 @@ from common import _
 from telegram.ext import CallbackContext, Updater, CommandHandler, MessageHandler, CallbackQueryHandler, Filters
 from telegram import Update, InlineKeyboardButton, InlineKeyboardMarkup, ReplyKeyboardMarkup, KeyboardButton
 
-from hever_api import HeverAPI, CardType
+from hever_api import HeverAPI, CardType, CardChargeException
 
 # Enable logging
 logging.basicConfig(format='%(asctime)s - %(name)s - %(levelname)s - %(message)s', level=logging.INFO)
@@ -21,6 +21,7 @@ class CardUnchargeable(Exception):
 
 
 class ChatState(Enum):
+    idle = 0
     waiting_for_charge_amount = 1
     waiting_for_fill_amount = 2
     waiting_for_transaction_confirmation = 3
@@ -70,6 +71,7 @@ class Bot:
 
     @restricted
     def start(self, update: Update, context: CallbackContext):
+        context.chat_data['state'] = ChatState.idle
         self.send_menu(_('Welcome!'), update, context)
 
     def send_menu(self, message, update: Update, context: CallbackContext):
@@ -91,6 +93,12 @@ class Bot:
     def handle_action(self, update: Update, context: CallbackContext):
         action = update.callback_query.data
 
+        try:
+            state: ChatState = context.chat_data['state']
+        except KeyError:
+            self.send_confused(update, context)
+            return
+
         if action == 'switch-card':
             self.switch_card()
             self.send_menu(_('Switched card!'), update, context)
@@ -104,9 +112,15 @@ class Bot:
             context.chat_data['state'] = ChatState.waiting_for_fill_amount
             context.bot.send_message(chat_id=update.effective_chat.id, text=_('How much is your bill?'))
 
-        elif action == 'confirm-transaction':
-            pass
-            # context.bot.send_message(chat_id=update.effective_chat.id, text=_('Charging your card...'))
+        elif action == 'confirm-transaction' and state is ChatState.waiting_for_transaction_confirmation:
+            context.chat_data['state'] = ChatState.idle
+            context.bot.send_message(chat_id=update.effective_chat.id, text=_('Charging your card...'))
+
+            try:
+                self.hever.charge_card(self.selected_card, context.chat_data.pop('to-charge'))
+                context.bot.send_message(chat_id=update.effective_chat.id, text=_("Card charged successfully!"))
+            except CardChargeException as e:
+                context.bot.send_message(chat_id=update.effective_chat.id, text=e.args[0])
 
         elif action == 'cancel':
             context.chat_data.clear()
@@ -117,7 +131,11 @@ class Bot:
 
     @restricted
     def handle_amount(self, update: Update, context: CallbackContext):
-        state = context.chat_data.get('state')
+        try:
+            state = context.chat_data['state']
+        except KeyError:
+            self.send_confused(update, context)
+            return
 
         amount = int(context.match.string)
         balance, chargeable_monthly, chargeable_now = self.hever.get_card_balance(self.selected_card).values()
@@ -139,27 +157,27 @@ class Bot:
 
             elif chargeable_now < self.hever.min_charge_amount:
                 context.chat_data.clear()
-                update.message.reply_text(_("Sorry, but you can't charge your card right now with any amount. You have "
-                                            "₪%.2f left") % balance)
+                update.message.reply_text(_("Sorry, but you can't charge your %s card right now with any amount. You have "
+                                            "₪%.2f left") % (self.selected_card.value, balance))
                 return
 
             elif to_charge > chargeable_now:
                 to_charge = chargeable_now
                 update.message.reply_text(
-                    _("We can't charge your card with enough right now, but can charge it with ₪%.2f and fill it to "
-                      "₪%.2f") % (chargeable_now, balance+chargeable_now),
+                    _("We can't charge your %s card with enough right now, but can charge it with ₪%.2f and fill it to "
+                      "₪%.2f") % (self.selected_card.value, chargeable_now, balance+chargeable_now),
                     reply_markup=self.transaction_confirmation_menu)
 
             elif chargeable_now >= to_charge:
-                    to_charge = min(5, to_charge)
-                    update.message.reply_text(_("We'll charge your card ₪%.2f to fill it to ₪%.2f.") % (to_charge, amount),
+                    to_charge = max(5, to_charge)
+                    update.message.reply_text(_("We'll charge your %s card ₪%.2f to fill it to ₪%.2f.") % (self.selected_card.value, to_charge, balance+to_charge),
                                               reply_markup=self.transaction_confirmation_menu)
 
             else:
                 context.chat_data.clear()
                 update.message.reply_text(_("Sorry, I got confused. Let me see a doctor"))
         finally:
-            context.chat_data['to_charge'] = to_charge
+            context.chat_data['to-charge'] = to_charge
             context.chat_data['state'] = ChatState.waiting_for_transaction_confirmation
 
     def switch_card(self):
