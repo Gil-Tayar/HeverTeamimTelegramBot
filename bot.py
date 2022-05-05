@@ -211,7 +211,4 @@ def main():
 
 
 if __name__ == '__main__':
-    # Make locale understand commas is number parsing!
-    # See https://stackoverflow.com/questions/2953746/python-parse-comma-separated-number-into-int.
-    locale.setlocale(locale.LC_ALL, 'en_US.UTF-8')
     main()
