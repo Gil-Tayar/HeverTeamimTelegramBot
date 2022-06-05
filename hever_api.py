@@ -38,16 +38,13 @@ class LoginException(Exception):
 
 
 class HeverAPI:
-    def __init__(self, creds, credit_card_data):
+    def __init__(self, config):
         self.session = requests.Session()
         self.session.headers.update({'user-agent': USER_AGENT})
 
-        self.username = creds['username']
-        self.password = creds['password']
+        self.username, self.password = config['hever_credentials'].split(':')
+        self.credit_card_number, self.card_year, self.card_month = config['payment_method'].split(':')
 
-        self.credit_card_number = credit_card_data['number']
-        self.card_year = credit_card_data['expiry-year']
-        self.card_month = credit_card_data['expiry-month']
 
     charge_rates = {
         CardType.blue: (None, None),
